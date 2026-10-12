@@ -1,0 +1,6 @@
+# Never publish local vaults or temporary encrypted writes.
+*.vault
+*.vault.*
+.vault-*
+.venv/
+__pycache__/
