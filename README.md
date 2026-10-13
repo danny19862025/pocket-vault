@@ -1,8 +1,13 @@
-# Pocket Vault
+# Pocket Vault 1.1.0
+
+See [release changes](CHANGELOG.md).
 
 An open-source Python/Tkinter password manager, tested on Arch Linux. Create an encrypted vault,
 add/edit/delete credentials, search services and usernames, generate passwords,
-and copy a password with a 20-second clipboard timeout. Locks after five minutes
+and copy a password with a 20-second clipboard timeout. A live strength bar below
+the master password and entry password fields shows an offline estimate from very
+weak to strong. It accounts for length and some common or repeated patterns; it
+does not check breach databases or guarantee that a password is safe. Locks after five minutes
 without keyboard or mouse-button activity; unsaved edits are discarded on lock.
 
 ## License and availability
@@ -40,21 +45,82 @@ sudo pacman -Syu --needed python tk python-cryptography
 ```
 
 Use the system Python above so it can access the packages installed by pacman.
-Choose a new vault location, enter and confirm a master password (12+ characters),
+Click **Choose new location…**, browse to a parent folder, then use **Create new
+folder…** inside that dialog if needed. Enter a vault filename and click **Use this
+location**. You can also use **Create folder…** directly on the unlock screen. Then enter and confirm a master password (12+ characters),
 then click **Create new vault**. Later, select the same file and click **Unlock vault**.
 Click **+ New**, fill in the details, then **Save**. Select an existing entry to edit it.
 The default vault is in `~/.local/share/pocket-vault/`, outside this repository.
+After successfully opening or creating a vault, Pocket Vault remembers its path
+for the next launch. **Open existing file…** starts in the selected vault’s folder
+with its filename prefilled. Only the location is saved, never the master password.
+
+## Import from another password manager
+
+Unlock your vault, click **Import passwords…**, and select a CSV, TSV, or unencrypted
+JSON export from your other manager. Common column names are matched automatically;
+use the dropdowns to correct the mapping. Review the logins and click **Import into
+vault**. Nothing is saved until you click that button. The import is encrypted and
+saved in one operation, with the usual cloud backup if enabled.
+
+Supported layouts include browser CSV (`name,url,username,password`), Firefox-style
+CSV without a name (the website becomes the title), Bitwarden CSV and unencrypted
+JSON, KeePass CSV (`Account,Login Name,Password,Web Site`), and generic delimited
+exports such as LastPass or 1Password CSV with manual column mapping. Other JSON
+files can use a list of login objects, or `{ "entries": [...] }`, with the same fields.
+CSV must have a header row; UTF-8 (with or without BOM) and UTF-16 are supported.
+
+The preview reports skipped duplicates and incomplete/non-login items. Exact
+matches across all four login fields are skipped, including duplicates within the
+export. Existing entries are never replaced; changed credentials are imported as
+separate entries. Passwords are preserved exactly, including spaces and newlines.
+Only service/title, username, password, and website are imported. Notes, custom
+fields, TOTP, attachments, cards, identities, and passkeys are not imported.
+Native encrypted formats such as KDBX, 1PUX, and encrypted Bitwarden JSON are not
+supported; export CSV or unencrypted JSON in the original manager first.
+
+Export files contain readable credentials and are left unchanged by Pocket Vault.
+After verifying the imported entries, remove the export from your device. The
+importer never uploads the plaintext export or writes plaintext temporary files.
+Files are limited to 20 MB and 50,000 items per import.
+
+Format references: [Bitwarden exports](https://bitwarden.com/help/condition-bitwarden-import/),
+[KeePass CSV](https://keepass.info/help/base/importexport.html).
 
 ## Cloud storage
 
-Use **Choose new location** to put the encrypted `.vault` file inside a folder
-already synchronized by your cloud client. On another computer, open the synced
-file using the same master password. This app does not include provider login or
-its own cloud client. Sync must be configured separately.
+Open **Cloud storage…** from the vault dashboard or **Cloud storage • Google Drive & Dropbox…**
+from the unlock screen. Install [rclone](https://rclone.org/install/) first
+(on Arch: `sudo pacman -S rclone`). It is already installed on the development desktop.
 
-Edit on only one computer at a time; lock the app and let sync finish before opening
-it elsewhere. The app detects changes present before saving, but cannot merge
-simultaneous edits or guarantee protection against sync races. Keep encrypted backups.
+1. Click **Connect Google Drive…** or **Connect Dropbox…**, and finish signing in
+   with the chosen provider in your browser. Pocket Vault uses rclone’s OAuth flow;
+   account tokens are managed by rclone, separately from the master password.
+   Google Drive uses `drive.file` scope, limiting access to files created through
+   this app’s rclone connection. Dropbox uses rclone’s standard connection
+   ([Dropbox setup](https://rclone.org/dropbox/)).
+2. Select the account and cloud folder, then click **Save options**.
+3. Unlock your vault and click **Back up now**, or enable **Back up this vault after
+   every saved change**. Saving or deleting an entry then queues an encrypted backup.
+   Local saves still succeed offline; failures appear in the cloud panel. Retry with
+   **Back up now** when connected. Keep the app open until the upload finishes.
+4. To restore, lock the vault, open the cloud panel, click **List backups**, select a
+   version, and **Restore to new file…**. Choose a new local filename; existing vaults
+   are never overwritten. Unlock the restored file with its original master password.
+
+Backups upload only the encrypted vault bytes, never the master password or unsaved
+edits. Each upload creates a separate timestamped version, avoiding replacement of
+another device's backup. Backups accumulate; remove unwanted versions in your cloud
+account. The local vault remains available offline. This is backup and restore,
+not automatic two-way synchronization or merging; edit on one device at a time.
+
+Google Drive and Dropbox both support manual backup, automatic backup after saved
+changes, and restore to a new file. Select the account you want to back up to;
+automatic backups use the selected destination. Existing rclone accounts for other providers also appear under **Refresh accounts**.
+You can still use **Choose new location** to store the encrypted file in a folder
+managed by a separate cloud sync client. Sync races cannot be merged by the app.
+On a new device, reconnect your existing rclone configuration to access files created
+with the restricted Google Drive scope (see [rclone Drive documentation](https://rclone.org/drive/)).
 
 ## Storage details
 
@@ -80,9 +146,13 @@ From the repository root:
 
 ## Interface
 
-The two-panel layout includes a searchable, alphabetically sorted password list,
+The orange-and-cyan interface has a split unlock screen, white cards, orange
+primary actions, and cyan highlights. The two-panel vault layout includes a searchable, alphabetically sorted password list,
 a scroll bar, and an entry editor. Save with **Save password** or **Ctrl+S**;
-create an entry with **+ New** or **Ctrl+N**. Unsaved edits prompt before switching
+create an entry with **+ New** or **Ctrl+N**. Click the eye-shaped **Show/Hide**
+button beside a password to reveal or mask it. Eye buttons also appear beside the
+master and confirmation passwords. New entries, switching entries, and locking
+reset password visibility. Unsaved edits prompt before switching
 entries, creating another entry, manually locking, or closing. Automatic locking
 still discards unsaved edits after five minutes to protect an unattended vault.
 
