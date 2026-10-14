@@ -23,7 +23,7 @@ from importing import load_export, prepare_entries, FIELDS
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title(f'Pocket Vault {VERSION} • Password Manager')
+        self.title('KeyKite')
         self.geometry('1120x760')
         self.minsize(1000, 720)
         apply_theme(self)
@@ -241,7 +241,7 @@ class App(tk.Tk):
         frame.pack(fill='both', expand=True)
         header = ttk.Frame(frame)
         header.pack(fill='x')
-        ttk.Label(header, text='Pocket Vault', style='Title.TLabel').pack(side='left')
+        ttk.Label(header, text='KeyKite', style='Title.TLabel').pack(side='left')
         ttk.Button(header, text='Lock vault', command=self.lock).pack(side='right')
         ttk.Button(header, text='Cloud storage…', command=self.cloud_dialog).pack(side='right', padx=8)
         ttk.Button(header, text='Import passwords…', command=self.import_passwords).pack(side='right')
@@ -332,7 +332,7 @@ class App(tk.Tk):
             messagebox.showerror('Cannot import passwords', str(error), parent=self)
             return
         window = tk.Toplevel(self)
-        window.title('Pocket Vault • Import passwords')
+        window.title('KeyKite • Import passwords')
         window.geometry('840x650')
         window.minsize(760, 620)
         window.transient(self)
@@ -472,7 +472,7 @@ class App(tk.Tk):
             self.cloud_window.lift()
             return
         window = self.cloud_window = tk.Toplevel(self)
-        window.title('Pocket Vault • Cloud storage')
+        window.title('KeyKite • Cloud storage')
         window.geometry('720x700')
         window.minsize(680, 690)
         window.transient(self)
@@ -708,7 +708,7 @@ class App(tk.Tk):
 
     def close(self):
         if self.cloud_busy or self.cloud_pending is not None:
-            messagebox.showinfo('Cloud operation running', 'Wait for the cloud operation to finish before closing Pocket Vault.', parent=self)
+            messagebox.showinfo('Cloud operation running', 'Wait for the cloud operation to finish before closing KeyKite.', parent=self)
             return
         if self.vault and not self.discard():
             return

@@ -1,4 +1,4 @@
-# Pocket Vault 1.1.0
+# KeyKite 1.1.0
 
 See [release changes](CHANGELOG.md).
 
@@ -12,8 +12,8 @@ without keyboard or mouse-button activity; unsaved edits are discarded on lock.
 
 ## License and availability
 
-Pocket Vault is released under the [MIT License](LICENSE). Anyone who obtains a
-copy may use, modify, and redistribute it under those terms. This repository contains only Pocket Vault.
+KeyKite is released under the [MIT License](LICENSE). Anyone who obtains a
+copy may use, modify, and redistribute it under those terms. This repository contains only KeyKite.
 
 ## Requirements and installation
 
@@ -51,7 +51,7 @@ location**. You can also use **Create folder…** directly on the unlock screen.
 then click **Create new vault**. Later, select the same file and click **Unlock vault**.
 Click **+ New**, fill in the details, then **Save**. Select an existing entry to edit it.
 The default vault is in `~/.local/share/pocket-vault/`, outside this repository.
-After successfully opening or creating a vault, Pocket Vault remembers its path
+After successfully opening or creating a vault, KeyKite remembers its path
 for the next launch. **Open existing file…** starts in the selected vault’s folder
 with its filename prefilled. Only the location is saved, never the master password.
 
@@ -79,7 +79,7 @@ fields, TOTP, attachments, cards, identities, and passkeys are not imported.
 Native encrypted formats such as KDBX, 1PUX, and encrypted Bitwarden JSON are not
 supported; export CSV or unencrypted JSON in the original manager first.
 
-Export files contain readable credentials and are left unchanged by Pocket Vault.
+Export files contain readable credentials and are left unchanged by KeyKite.
 After verifying the imported entries, remove the export from your device. The
 importer never uploads the plaintext export or writes plaintext temporary files.
 Files are limited to 20 MB and 50,000 items per import.
@@ -94,7 +94,7 @@ from the unlock screen. Install [rclone](https://rclone.org/install/) first
 (on Arch: `sudo pacman -S rclone`). It is already installed on the development desktop.
 
 1. Click **Connect Google Drive…** or **Connect Dropbox…**, and finish signing in
-   with the chosen provider in your browser. Pocket Vault uses rclone’s OAuth flow;
+   with the chosen provider in your browser. KeyKite uses rclone’s OAuth flow;
    account tokens are managed by rclone, separately from the master password.
    Google Drive uses `drive.file` scope, limiting access to files created through
    this app’s rclone connection. Dropbox uses rclone’s standard connection

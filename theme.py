@@ -1,4 +1,4 @@
-"""Orange and cyan styling shared by every Pocket Vault screen."""
+"""Orange and cyan styling shared by every KeyKite screen."""
 from tkinter import ttk
 
 BACKGROUND = '#edf7f9'

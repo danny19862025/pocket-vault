@@ -54,7 +54,7 @@ class Cloud:
             raise ValueError('Select a connected cloud account.')
         folder = folder.strip().strip('/')
         if not folder or any(p in ('.', '..') for p in folder.split('/')) or ':' in folder or '\\' in folder:
-            raise ValueError('Enter a cloud folder such as Pocket Vault.')
+            raise ValueError('Enter a cloud folder such as KeyKite.')
         return remote + folder
 
     def configure(self, remote, folder, vault_path, automatic):
@@ -101,7 +101,7 @@ class Cloud:
 
     def restore(self, remote, folder, name, path):
         if not re.fullmatch(r'backup-\d{8}T\d{6}Z-[0-9a-f]{32}\.vault', name):
-            raise ValueError('Select a Pocket Vault backup.')
+            raise ValueError('Select a KeyKite backup.')
         target = Path(path).expanduser()
         if target.exists():
             raise ValueError('Choose a new local filename. Restore never overwrites a vault.')
