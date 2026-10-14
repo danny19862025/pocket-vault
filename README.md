@@ -41,19 +41,19 @@ signature/notarization; the operating system may require approval before opening
 To build locally, use Python 3.13 with Tkinter on the target operating system:
 
 ```text
-python -m pip install -r requirements.txt "pyinstaller>=6.16,<7"
+python -m pip install -r requirements.txt "pyinstaller>=6.16,<7" "pillow>=11,<13"
 ```
 
 On Windows:
 
 ```text
-python -m PyInstaller --noconfirm --clean --onefile --windowed --icon NONE --name KeyKite app.py
+python -m PyInstaller --noconfirm --clean --onefile --windowed --icon keykite.png --name KeyKite app.py
 ```
 
 On macOS:
 
 ```text
-python -m PyInstaller --noconfirm --clean --onedir --windowed --icon NONE --name KeyKite --osx-bundle-identifier io.github.danny19862025.keykite app.py
+python -m PyInstaller --noconfirm --clean --onedir --windowed --icon keykite.png --name KeyKite --osx-bundle-identifier io.github.danny19862025.keykite app.py
 ```
 
 The output is in `dist/`. Build each package on its target OS; PyInstaller does

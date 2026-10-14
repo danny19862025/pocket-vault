@@ -14,7 +14,7 @@ class ImportTests(unittest.TestCase):
 
     def read(self, text, suffix='.csv', encoding='utf-8'):
         path = self.root / ('export' + suffix)
-        path.write_text(text, encoding=encoding)
+        path.write_text(text, encoding=encoding, newline='')
         data = load_export(path)
         return data, prepare_entries(data, data.mapping(), [])
 
