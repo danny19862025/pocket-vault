@@ -22,6 +22,24 @@ A graphical desktop is required. Linux is tested locally; Windows and macOS
 packages are built by GitHub Actions. Interactive use on those platforms still
 needs verification. The packages are portable apps, without an installer.
 
+### Linux distributions
+
+See the [Linux installation guide](INSTALL.md) for dependency commands and setup:
+
+- [Debian, Ubuntu, Linux Mint, Pop!_OS, and related distributions](INSTALL.md#debian-ubuntu-linux-mint-and-related-distributions)
+- [Fedora](INSTALL.md#fedora) and [Fedora Atomic desktops](INSTALL.md#fedora-atomic-desktops)
+- [Arch Linux, EndeavourOS, and Manjaro](INSTALL.md#arch-linux-endeavouros-and-manjaro)
+- [Gentoo](INSTALL.md#gentoo)
+- [openSUSE Tumbleweed and Leap](INSTALL.md#opensuse-tumbleweed-and-leap)
+- [Alpine Linux](INSTALL.md#alpine-linux)
+- [Void Linux](INSTALL.md#void-linux)
+- [NixOS and Nix](INSTALL.md#nixos-and-nix)
+- [Other Linux distributions](INSTALL.md#other-linux-distributions)
+
+The guide includes launching, updating, optional cloud backup, and troubleshooting.
+Only Arch Linux has been tested locally; the other instructions are installation
+guidance, not a claim that each distribution has been tested.
+
 ## Windows and macOS apps
 
 Open [desktop builds](https://github.com/danny19862025/pocket-vault/actions/workflows/desktop-builds.yml),
@@ -61,7 +79,8 @@ not cross-compile. See [PyInstaller usage](https://pyinstaller.org/en/stable/usa
 
 ## Run from Python source
 
-Clone the repository:
+On Linux, first install the dependencies for your distribution in the
+[installation guide](INSTALL.md). Then clone the repository:
 
 ```bash
 git clone https://github.com/danny19862025/pocket-vault.git
@@ -72,7 +91,8 @@ python3 -m venv .venv
 ```
 
 Tkinter must be installed through your operating system; it is not included in
-`requirements.txt`. The Arch Linux instructions below install all dependencies
+`requirements.txt`. openSUSE and Void have alternative environment-creation
+commands in the guide. The Arch Linux instructions below install all dependencies
 without a virtual environment.
 
 ## Run on Arch Linux
