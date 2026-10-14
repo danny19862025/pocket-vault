@@ -1,0 +1,54 @@
+name: Build KeyKite desktop apps
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt "pyinstaller>=6.16,<7"
+      - name: Test imports and password strength
+        run: python -m unittest test_importing test_strength -v
+      - name: Build KeyKite.exe
+        run: python -m PyInstaller --noconfirm --clean --onefile --windowed --icon NONE --name KeyKite app.py
+      - name: Upload Windows app
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeyKite-Windows-x64
+          path: dist/KeyKite.exe
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt "pyinstaller>=6.16,<7"
+      - name: Test storage, imports, cloud, and password strength
+        run: python -m unittest test_vault test_importing test_cloud test_strength -v
+      - name: Build KeyKite.app
+        run: python -m PyInstaller --noconfirm --clean --onedir --windowed --icon NONE --name KeyKite --osx-bundle-identifier io.github.danny19862025.keykite app.py
+      - name: Archive app with executable permissions
+        run: ditto -c -k --sequesterRsrc --keepParent dist/KeyKite.app dist/KeyKite-macOS-arm64.zip
+      - name: Upload macOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeyKite-macOS-arm64
+          path: dist/KeyKite-macOS-arm64.zip
+          if-no-files-found: error

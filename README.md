@@ -18,8 +18,48 @@ copy may use, modify, and redistribute it under those terms. This repository con
 ## Requirements and installation
 
 Tested with Python 3.14, Tkinter, and cryptography 50.0.2 on Arch Linux.
-Other desktop platforms have not been tested. A graphical desktop is required.
-There is no standalone installer; run the Python source.
+A graphical desktop is required. Linux is tested locally; Windows and macOS
+packages are built by GitHub Actions. Interactive use on those platforms still
+needs verification. The packages are portable apps, without an installer.
+
+## Windows and macOS apps
+
+Open [desktop builds](https://github.com/danny19862025/pocket-vault/actions/workflows/desktop-builds.yml),
+select a successful run, and download its artifact (GitHub sign-in required):
+
+- **KeyKite-Windows-x64**: extract the archive and open `KeyKite.exe`.
+- **KeyKite-macOS-arm64** (Apple Silicon): extract the artifact, then the enclosed
+  ZIP, and move `KeyKite.app` into Applications.
+
+Both apps display **KeyKite**. Existing vault paths and preferences retain the
+`pocket-vault` directory name so the rename does not move stored data.
+Python and the encryption library are bundled. Cloud backup still requires
+[rclone](https://rclone.org/install/) installed separately and available on PATH.
+These builds have no Windows publisher certificate or Apple Developer ID
+signature/notarization; the operating system may require approval before opening.
+
+To build locally, use Python 3.13 with Tkinter on the target operating system:
+
+```text
+python -m pip install -r requirements.txt "pyinstaller>=6.16,<7"
+```
+
+On Windows:
+
+```text
+python -m PyInstaller --noconfirm --clean --onefile --windowed --icon NONE --name KeyKite app.py
+```
+
+On macOS:
+
+```text
+python -m PyInstaller --noconfirm --clean --onedir --windowed --icon NONE --name KeyKite --osx-bundle-identifier io.github.danny19862025.keykite app.py
+```
+
+The output is in `dist/`. Build each package on its target OS; PyInstaller does
+not cross-compile. See [PyInstaller usage](https://pyinstaller.org/en/stable/usage.html).
+
+## Run from Python source
 
 Clone the repository:
 
