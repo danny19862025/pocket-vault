@@ -24,6 +24,39 @@ jobs:
         run: python -m unittest test_importing test_strength -v
       - name: Build KeyKite.exe
         run: python -m PyInstaller --noconfirm --clean --onefile --windowed --icon keykite.png --name KeyKite app.py
+      - name: Verify KeyKite.exe opens its window
+        shell: pwsh
+        run: |
+          $env:XDG_CONFIG_HOME = Join-Path $env:RUNNER_TEMP 'keykite-smoke-config'
+          $env:XDG_DATA_HOME = Join-Path $env:RUNNER_TEMP 'keykite-smoke-data'
+          $taskProcess = Start-Process -FilePath (Resolve-Path 'dist/KeyKite.exe') -PassThru
+          try {
+            $deadline = (Get-Date).AddSeconds(45)
+            $opened = $false
+            do {
+              Start-Sleep -Milliseconds 500
+              $taskProcess.Refresh()
+              if ($taskProcess.HasExited) {
+                throw "KeyKite.exe exited before opening its window (code $($taskProcess.ExitCode))."
+              }
+              # PyInstaller one-file apps open their window in a child process.
+              $windows = @(Get-Process -Name KeyKite -ErrorAction SilentlyContinue |
+                Where-Object { $_.MainWindowTitle -eq 'KeyKite' })
+              if ($windows.Count -gt 0) {
+                $opened = $true
+                Write-Host 'KeyKite.exe opened the KeyKite window successfully.'
+                break
+              }
+            } while ((Get-Date) -lt $deadline)
+            if (-not $opened) {
+              Get-Process -Name KeyKite -ErrorAction SilentlyContinue |
+                Select-Object Id, MainWindowTitle | Format-Table | Out-String | Write-Host
+              throw 'KeyKite.exe did not open the KeyKite window within 45 seconds.'
+            }
+          } finally {
+            Get-Process -Name KeyKite -ErrorAction SilentlyContinue |
+              Stop-Process -Force -ErrorAction SilentlyContinue
+          }
       - name: Upload Windows app
         uses: actions/upload-artifact@v4
         with:
