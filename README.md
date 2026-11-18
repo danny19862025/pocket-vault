@@ -10,6 +10,23 @@ weak to strong. It accounts for length and some common or repeated patterns; it
 does not check breach databases or guarantee that a password is safe. Locks after five minutes
 without keyboard or mouse-button activity; unsaved edits are discarded on lock.
 
+## Appearance
+
+KeyKite uses an ArchEasy-inspired blue and teal theme, rounded buttons with
+hover glow and pressed/focus feedback, and a 1.8-second opening animation with
+a scaling kite, expanding light rings, and a fading wordmark. Click the intro or
+press Escape to skip it. The **Animations** checkbox disables the intro and
+180 ms button hover transitions; desktop reduced-motion settings are respected
+when available through GSettings.
+
+The top bar offers **System**, **Light**, **Dark**, and **Custom** themes.
+**Colours…** edits background, surfaces, text, secondary text, accent, and borders.
+**Apply theme** saves and selects Custom; Cancel leaves the saved colours alone.
+Theme changes apply immediately without discarding entered passwords or edits.
+System reads the desktop GTK preference at launch. Appearance settings are saved
+separately in `$XDG_CONFIG_HOME/pocket-vault/appearance.json` (normally
+`~/.config/pocket-vault/appearance.json`). KeyKite remains a Python/Tkinter app.
+
 ## License and availability
 
 KeyKite is released under the [MIT License](LICENSE). Anyone who obtains a

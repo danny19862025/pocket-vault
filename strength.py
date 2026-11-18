@@ -48,13 +48,21 @@ class StrengthMeter(ttk.Frame):
                                font=('DejaVu Sans', 9))
         self.label.pack(anchor='w', pady=(3, 0))
         self.bar.bind('<Configure>', self.update_meter)
+        self.bind('<<AppearanceChanged>>', self.update_meter)
         self.trace = variable.trace_add('write', self.update_meter)
         self.update_meter()
 
     def update_meter(self, *args):
         self.score = estimate(self.variable.get())
         self.text.set('Estimated strength · ' + self.LABELS[self.score])
+        appearance = getattr(self._root(), 'appearance', None)
+        if appearance:
+            from theme import blend
+            bg, surface, text, muted, accent, border = appearance.palette
+            self.bar.configure(background=blend(surface, border, .25))
         color = self.COLORS[self.score]
+        if appearance and not self.score:
+            color = muted
         self.label.configure(foreground=color)
         self.bar.delete('all')
         if self.score:

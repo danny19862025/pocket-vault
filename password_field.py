@@ -1,6 +1,7 @@
 """Password entry with a keyboard-accessible eye button."""
 import tkinter as tk
 from tkinter import ttk
+from theme import Button
 
 
 class PasswordField(ttk.Frame):
@@ -11,13 +12,15 @@ class PasswordField(ttk.Frame):
         self.entry.pack(side='left', fill='x', expand=True)
         self.eye = self.eye_icon(False)
         self.crossed_eye = self.eye_icon(True)
-        self.button = ttk.Button(self, text='Show', image=self.eye, compound='left',
+        self.button = Button(self, text='Show', image=self.eye, compound='left',
                                  style='Eye.TButton', command=self.toggle)
         self.button.pack(side='right', padx=(6, 0))
+        self.bind('<<AppearanceChanged>>', self.refresh_icons)
 
     def eye_icon(self, crossed):
         icon = tk.PhotoImage(master=self, width=24, height=18)
-        color = '#0e7490'
+        appearance = getattr(self._root(), 'appearance', None)
+        color = appearance.palette[4] if appearance else '#1793d1'
         for x in range(2, 22):
             radius = 5 * (1 - ((x - 11.5) / 9.5) ** 2)
             for y in (round(8.5 - radius), round(8.5 + radius)):
@@ -32,6 +35,11 @@ class PasswordField(ttk.Frame):
                 icon.put(color, (x, y))
                 icon.put(color, (x, min(y + 1, 17)))
         return icon
+
+    def refresh_icons(self, event=None):
+        self.eye = self.eye_icon(False)
+        self.crossed_eye = self.eye_icon(True)
+        self.button.configure(image=self.crossed_eye if self.visible.get() else self.eye)
 
     def set_visible(self, visible):
         self.visible.set(visible)

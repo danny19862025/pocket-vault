@@ -11,7 +11,7 @@ from tkinter import ttk, filedialog, messagebox, simpledialog
 import uuid
 
 from version import VERSION
-from theme import apply_theme
+from theme import apply_theme, OpeningAnimation, Button, blend
 from vault import Vault
 from cloud import Cloud
 from preferences import last_vault, remember_vault
@@ -41,6 +41,8 @@ class App(tk.Tk):
         self.protocol('WM_DELETE_WINDOW', self.close)
         self.idle_timer = self.after(1000, self.check_idle)
         self.login()
+        if self.appearance.motion.get():
+            self.intro = OpeningAnimation(self)
         self.bind('<Control-s>', lambda event: self.save() if self.vault else None)
         self.bind('<Control-n>', lambda event: self.new() if self.vault else None)
 
@@ -48,6 +50,8 @@ class App(tk.Tk):
         self.last_active = time.monotonic()
 
     def clear(self):
+        if hasattr(self, 'intro'):
+            self.intro.finish()
         for child in self.winfo_children():
             child.destroy()
 
@@ -58,22 +62,30 @@ class App(tk.Tk):
             for value in self.fields.values():
                 value.set('')
         self.clear()
-        shell = ttk.Frame(self, padding=28)
+        self.appearance.controls(self)
+        shell = ttk.Frame(self, padding=(28, 12, 28, 28))
         shell.pack(fill='both', expand=True)
         shell.columnconfigure(0, minsize=270)
         shell.columnconfigure(1, weight=1)
         shell.rowconfigure(0, weight=1)
         hero = ttk.Frame(shell, style='Hero.TFrame', padding=24)
         hero.grid(row=0, column=0, sticky='nsew', padx=(0, 24))
-        ttk.Label(hero, text='Pocket', style='HeroTitle.TLabel').pack(anchor='w', pady=(14, 0))
-        ttk.Label(hero, text='Vault', style='HeroAccent.TLabel').pack(anchor='w')
-        emblem = tk.Canvas(hero, width=220, height=160, background='#102f3a', highlightthickness=0)
+        ttk.Label(hero, text='Key', style='HeroTitle.TLabel').pack(anchor='w', pady=(14, 0))
+        ttk.Label(hero, text='Kite', style='HeroAccent.TLabel').pack(anchor='w')
+        emblem = tk.Canvas(hero, width=220, height=170, highlightthickness=0)
         emblem.pack(pady=(30, 22))
-        emblem.create_oval(45, 10, 177, 142, fill='#164654', outline='')
-        emblem.create_arc(79, 31, 143, 101, start=0, extent=180, style='arc', width=9, outline='#67d7e9')
-        emblem.create_rectangle(75, 71, 147, 121, fill='#ff8a3d', outline='')
-        emblem.create_oval(105, 85, 117, 97, fill='#102f3a', outline='')
-        emblem.create_line(111, 93, 111, 107, fill='#102f3a', width=5, capstyle='round')
+        def draw_emblem(event=None):
+            bg, surface, text, muted, accent, border = self.appearance.palette
+            emblem.configure(background=surface)
+            emblem.delete('all')
+            emblem.create_oval(25, 0, 195, 170, fill=blend(surface, accent, .08), outline='')
+            emblem.create_polygon(110, 16, 172, 76, 110, 138, 48, 76,
+                                  fill=accent, outline=blend(accent, text, .3), width=2)
+            emblem.create_line(48, 76, 172, 76, fill=surface, width=2)
+            emblem.create_line(110, 16, 110, 138, fill=surface, width=2)
+            emblem.create_line(110, 138, 125, 151, 108, 164, smooth=True, fill=accent, width=3)
+        draw_emblem()
+        emblem.bind('<<AppearanceChanged>>', draw_emblem)
         ttk.Label(hero, text='Your passwords.\nYour space.', style='Hero.TLabel', wraplength=230).pack(anchor='w')
         ttk.Label(hero, text='Encrypted storage.\nOptional cloud backups.', style='Hero.TLabel', wraplength=230).pack(side='bottom', anchor='w', pady=(20, 12))
         frame = ttk.Frame(shell, style='Card.TFrame', padding=24)
@@ -86,10 +98,10 @@ class App(tk.Tk):
         ttk.Entry(frame, textvariable=self.path).pack(fill='x', pady=8)
         row = ttk.Frame(frame, style='Card.TFrame')
         row.pack(fill='x')
-        ttk.Button(row, text='Open existing file…', command=lambda: self.choose(False)).pack(side='left')
-        ttk.Button(row, text='Choose new location…', command=lambda: self.choose(True)).pack(side='left', padx=8)
-        ttk.Button(row, text='Create folder…', command=self.create_folder).pack(side='left')
-        ttk.Button(frame, text='Cloud storage • Google Drive & Dropbox…', command=self.cloud_dialog).pack(anchor='w', pady=15)
+        Button(row, text='Open existing file…', command=lambda: self.choose(False)).pack(side='left')
+        Button(row, text='Choose new location…', command=lambda: self.choose(True)).pack(side='left', padx=8)
+        Button(row, text='Create folder…', command=self.create_folder).pack(side='left')
+        Button(frame, text='Cloud storage • Google Drive & Dropbox…', command=self.cloud_dialog).pack(anchor='w', pady=15)
         ttk.Label(frame, style='Card.TLabel', text='Master password').pack(anchor='w')
         self.master_password = tk.StringVar()
         self.master_field = PasswordField(frame, self.master_password, card=True)
@@ -107,8 +119,8 @@ class App(tk.Tk):
         self.confirm_field.pack(fill='x', pady=8)
         row = ttk.Frame(frame, style='Card.TFrame')
         row.pack(anchor='w', pady=16)
-        ttk.Button(row, text='Unlock vault', style='Accent.TButton', command=lambda: self.unlock(False)).pack(side='left')
-        ttk.Button(row, text='Create new vault', command=lambda: self.unlock(True)).pack(side='left', padx=8)
+        Button(row, text='Unlock vault', style='Accent.TButton', command=lambda: self.unlock(False)).pack(side='left')
+        Button(row, text='Create new vault', command=lambda: self.unlock(True)).pack(side='left', padx=8)
         ttk.Label(frame, style='Card.TLabel', text='Keep your master password safe. It cannot be recovered.').pack(anchor='w')
 
     def choose(self, new):
@@ -151,8 +163,8 @@ class App(tk.Tk):
 
         row = ttk.Frame(frame)
         row.pack(anchor='w', pady=(0, 16))
-        ttk.Button(row, text='Browse folders…', command=browse).pack(side='left')
-        ttk.Button(row, text='Create new folder…', command=create).pack(side='left', padx=8)
+        Button(row, text='Browse folders…', command=browse).pack(side='left')
+        Button(row, text='Create new folder…', command=create).pack(side='left', padx=8)
         ttk.Label(frame, text='Vault filename').pack(anchor='w')
         entry = ttk.Entry(frame, textvariable=filename)
         entry.pack(fill='x', pady=8)
@@ -178,8 +190,8 @@ class App(tk.Tk):
 
         row = ttk.Frame(frame)
         row.pack(anchor='e', pady=(12, 0))
-        ttk.Button(row, text='Cancel', command=window.destroy).pack(side='left')
-        ttk.Button(row, text='Use this location', style='Accent.TButton', command=use_location).pack(side='left', padx=(8, 0))
+        Button(row, text='Cancel', command=window.destroy).pack(side='left')
+        Button(row, text='Use this location', style='Accent.TButton', command=use_location).pack(side='left', padx=(8, 0))
         entry.bind('<Return>', lambda event: use_location())
         window.bind('<Escape>', lambda event: window.destroy())
         window.grab_set()
@@ -237,14 +249,15 @@ class App(tk.Tk):
 
     def dashboard(self):
         self.clear()
-        frame = ttk.Frame(self, padding=28)
+        self.appearance.controls(self)
+        frame = ttk.Frame(self, padding=(28, 12, 28, 28))
         frame.pack(fill='both', expand=True)
         header = ttk.Frame(frame)
         header.pack(fill='x')
         ttk.Label(header, text='KeyKite', style='Title.TLabel').pack(side='left')
-        ttk.Button(header, text='Lock vault', command=self.lock).pack(side='right')
-        ttk.Button(header, text='Cloud storage…', command=self.cloud_dialog).pack(side='right', padx=8)
-        ttk.Button(header, text='Import passwords…', command=self.import_passwords).pack(side='right')
+        Button(header, text='Lock vault', command=self.lock).pack(side='right')
+        Button(header, text='Cloud storage…', command=self.cloud_dialog).pack(side='right', padx=8)
+        Button(header, text='Import passwords…', command=self.import_passwords).pack(side='right')
         ttk.Label(frame, text='YOUR PASSWORDS  /  Encrypted locally • Auto-lock after 5 minutes', style='Eyebrow.TLabel').pack(anchor='w', pady=(8, 12))
         ttk.Separator(frame, style='Brand.TSeparator').pack(fill='x', pady=(0, 12))
         content = ttk.Frame(frame)
@@ -258,7 +271,7 @@ class App(tk.Tk):
         top.pack(fill='x', pady=(0, 16))
         self.count = tk.StringVar(value='All passwords')
         ttk.Label(top, textvariable=self.count, style='Section.TLabel').pack(side='left')
-        ttk.Button(top, text='+ New', command=self.new).pack(side='right')
+        Button(top, text='+ New', command=self.new).pack(side='right')
         ttk.Label(library, text='Search service or username', style='Card.TLabel').pack(anchor='w', pady=(0, 6))
         self.search = tk.StringVar()
         ttk.Entry(library, textvariable=self.search).pack(fill='x', pady=(0, 16))
@@ -299,12 +312,12 @@ class App(tk.Tk):
                     self.name_widget = widget
         row = ttk.Frame(editor, style='Card.TFrame')
         row.pack(fill='x')
-        ttk.Button(row, text='Generate', command=self.generate).pack(side='left')
-        ttk.Button(row, text='Copy password', command=self.copy_password).pack(side='left', padx=8)
+        Button(row, text='Generate', command=self.generate).pack(side='left')
+        Button(row, text='Copy password', command=self.copy_password).pack(side='left', padx=8)
         row = ttk.Frame(editor, style='Card.TFrame')
         row.pack(fill='x', pady=(12, 0))
-        ttk.Button(row, text='Save password', command=self.save, style='Accent.TButton').pack(side='left')
-        ttk.Button(row, text='Delete', command=self.delete, style='Danger.TButton').pack(side='right')
+        Button(row, text='Save password', command=self.save, style='Accent.TButton').pack(side='left')
+        Button(row, text='Delete', command=self.delete, style='Danger.TButton').pack(side='right')
         self.status = tk.StringVar(value='Ready. Select a password or create your first entry.')
         ttk.Label(frame, textvariable=self.status, style='Muted.TLabel', wraplength=1000).pack(side='bottom', anchor='w', pady=(12, 0), before=content)
         ttk.Label(frame, textvariable=self.cloud_notice, style='Muted.TLabel', wraplength=1000).pack(side='bottom', anchor='w', before=content)
@@ -366,7 +379,7 @@ class App(tk.Tk):
         ttk.Label(frame, text='Your export file may contain readable passwords. Remove it after verifying the import.', wraplength=780).pack(anchor='w', pady=(0, 8))
         actions = ttk.Frame(frame)
         actions.pack(fill='x')
-        ttk.Button(actions, text='Cancel', command=window.destroy).pack(side='right')
+        Button(actions, text='Cancel', command=window.destroy).pack(side='right')
         candidates = []
 
         def preview(*args):
@@ -401,7 +414,7 @@ class App(tk.Tk):
                 self.status.set(notice)
                 window.destroy()
 
-        confirm = ttk.Button(actions, text='Import into vault', style='Accent.TButton', command=commit)
+        confirm = Button(actions, text='Import into vault', style='Accent.TButton', command=commit)
         confirm.pack(side='right', padx=8)
         traces = [(variable, variable.trace_add('write', preview)) for variable in mapping.values()]
 
@@ -508,9 +521,9 @@ class App(tk.Tk):
 
         row = ttk.Frame(frame)
         row.pack(anchor='w')
-        ttk.Button(row, text='Connect Google Drive…', command=lambda: self.cloud_task(self.cloud.connect_drive, lambda name: connected(name, 'Google Drive'))).pack(side='left')
-        ttk.Button(row, text='Connect Dropbox…', command=lambda: self.cloud_task(self.cloud.connect_dropbox, lambda name: connected(name, 'Dropbox'))).pack(side='left', padx=8)
-        ttk.Button(row, text='Refresh accounts', command=refresh_accounts).pack(side='left')
+        Button(row, text='Connect Google Drive…', command=lambda: self.cloud_task(self.cloud.connect_drive, lambda name: connected(name, 'Google Drive'))).pack(side='left')
+        Button(row, text='Connect Dropbox…', command=lambda: self.cloud_task(self.cloud.connect_dropbox, lambda name: connected(name, 'Dropbox'))).pack(side='left', padx=8)
+        Button(row, text='Refresh accounts', command=refresh_accounts).pack(side='left')
         ttk.Label(frame, text='Connect opens the provider’s sign-in page in your browser. Existing rclone\naccounts (including OneDrive) appear after Refresh accounts.', wraplength=620, style='Muted.TLabel').pack(anchor='w', pady=10)
         ttk.Label(frame, text='Folder in your cloud account').pack(anchor='w')
         ttk.Entry(frame, textvariable=folder).pack(fill='x', pady=8)
@@ -539,8 +552,8 @@ class App(tk.Tk):
 
         row = ttk.Frame(frame)
         row.pack(anchor='w', pady=12)
-        ttk.Button(row, text='Save options', command=configure).pack(side='left')
-        ttk.Button(row, text='Back up now', command=backup_now, style='Accent.TButton').pack(side='left', padx=8)
+        Button(row, text='Save options', command=configure).pack(side='left')
+        Button(row, text='Back up now', command=backup_now, style='Accent.TButton').pack(side='left', padx=8)
         ttk.Label(frame, text='Restore an encrypted backup (lock your vault first)').pack(anchor='w', pady=(6, 0))
         backup_name = tk.StringVar()
         backups = ttk.Combobox(frame, textvariable=backup_name, state='readonly')
@@ -577,8 +590,8 @@ class App(tk.Tk):
 
         row = ttk.Frame(frame)
         row.pack(anchor='w')
-        ttk.Button(row, text='List backups', command=list_backups).pack(side='left')
-        ttk.Button(row, text='Restore to new file…', command=restore).pack(side='left', padx=8)
+        Button(row, text='List backups', command=list_backups).pack(side='left')
+        Button(row, text='Restore to new file…', command=restore).pack(side='left', padx=8)
         ttk.Label(frame, textvariable=self.cloud_notice, wraplength=620, style='Muted.TLabel').pack(anchor='w', pady=12)
         ttk.Label(frame, text='Each backup is a separate version. Unsaved edits are not included.\nThis is backup and restore; edit on one device at a time.', wraplength=620).pack(anchor='w')
         refresh_accounts()
