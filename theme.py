@@ -23,6 +23,14 @@ def valid_palette(value):
     return isinstance(value, (list, tuple)) and len(value) == 6 and all(isinstance(c, str) and re.fullmatch(r'#[0-9a-fA-F]{6}', c) for c in value)
 
 
+def hex_colour(value):
+    """Accept pasted hex colours, including the short #RGB form."""
+    value = value.strip()
+    if re.fullmatch(r'#[0-9a-fA-F]{3}', value):
+        value = '#' + ''.join(c * 2 for c in value[1:])
+    return value.lower() if re.fullmatch(r'#[0-9a-fA-F]{6}', value) else None
+
+
 def desktop_setting(schema, key):
     try:
         return subprocess.run(['gsettings', 'get', schema, key], capture_output=True, text=True, timeout=0.5, check=False).stdout.strip()
@@ -197,19 +205,31 @@ class Appearance:
         frame = ttk.Frame(window, padding=24)
         frame.pack(fill='both', expand=True)
         ttk.Label(frame, text='Customize your colours', style='Title.TLabel').grid(row=0, column=0, columnspan=3, sticky='w', pady=(0, 12))
+        ttk.Label(frame, text='Type or paste a hex colour, e.g. #1793d1 or #09f, or choose one below.').grid(
+            row=1, column=0, columnspan=3, sticky='w', pady=(0, 12))
         values = [tk.StringVar(window, value=c) for c in self.custom]
         def pick(index):
-            color = colorchooser.askcolor(values[index].get() if re.fullmatch(r'#[0-9a-fA-F]{6}', values[index].get()) else DARK[index], parent=window)[1]
+            color = colorchooser.askcolor(hex_colour(values[index].get()) or self.palette[index], parent=window)[1]
             if color:
                 values[index].set(color)
         for i, (label, value) in enumerate(zip(FIELDS, values)):
-            ttk.Label(frame, text=label).grid(row=i+1, column=0, sticky='w', padx=(0, 24), pady=6)
-            ttk.Entry(frame, textvariable=value, width=12).grid(row=i+1, column=1, padx=8)
-            Button(frame, text='Choose…', command=lambda i=i: pick(i)).grid(row=i+1, column=2)
+            ttk.Label(frame, text=label).grid(row=i+2, column=0, sticky='w', padx=(0, 24), pady=6)
+            field = ttk.Frame(frame)
+            field.grid(row=i+2, column=1, padx=8)
+            ttk.Entry(field, textvariable=value, width=12).pack(side='left')
+            swatch = tk.Label(field, width=3, relief='solid', borderwidth=1)
+            swatch.pack(side='left', padx=(8, 0))
+            def preview(*args, value=value, swatch=swatch):
+                color = hex_colour(value.get())
+                swatch.configure(background=color or self.palette[1],
+                                 foreground=self.palette[2], text='' if color else '?')
+            value.trace_add('write', preview)
+            preview()
+            Button(frame, text='Choose…', command=lambda i=i: pick(i)).grid(row=i+2, column=2)
         def apply():
-            colors = [v.get() for v in values]
+            colors = [hex_colour(v.get()) for v in values]
             if not valid_palette(colors):
-                messagebox.showerror('Invalid colour', 'Enter each colour as #RRGGBB.', parent=window)
+                messagebox.showerror('Invalid colour', 'Enter each colour as #RRGGBB or #RGB (for example, #1793d1 or #09f).', parent=window)
                 return
             self.custom = colors
             self.mode.set('Custom')

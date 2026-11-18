@@ -21,6 +21,8 @@ when available through GSettings.
 
 The top bar offers **System**, **Light**, **Dark**, and **Custom** themes.
 **Colours…** edits background, surfaces, text, secondary text, accent, and borders.
+Type or paste a hex code such as `#1793d1` or `#09f` into each colour field;
+the swatch previews the colour immediately. **Choose…** opens the colour picker.
 **Apply theme** saves and selects Custom; Cancel leaves the saved colours alone.
 Theme changes apply immediately without discarding entered passwords or edits.
 System reads the desktop GTK preference at launch. Appearance settings are saved

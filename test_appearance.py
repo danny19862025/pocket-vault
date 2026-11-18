@@ -96,16 +96,16 @@ class AppearanceTests(unittest.TestCase):
         window = next(w for w in self.app.winfo_children() if isinstance(w, tk.Toplevel))
         entries = [w for w in descendants(window) if isinstance(w, ttk.Entry)]
         entries[4].delete(0, 'end')
-        entries[4].insert(0, '#a855f7')
+        entries[4].insert(0, ' #A5F ')
         next(w for w in descendants(window) if isinstance(w, Button) and w.cget('text') == 'Apply theme').invoke()
         self.app.update()
-        self.assertEqual(self.app.appearance.palette[4], '#a855f7')
+        self.assertEqual(self.app.appearance.palette[4], '#aa55ff')
         self.assertEqual(self.app.appearance.mode.get(), 'Custom')
         self.app.appearance.edit()
         window = next(w for w in self.app.winfo_children() if isinstance(w, tk.Toplevel))
         next(w for w in descendants(window) if isinstance(w, Button) and w.cget('text') == 'Reset colours').invoke()
         next(w for w in descendants(window) if isinstance(w, Button) and w.cget('text') == 'Cancel').invoke()
-        self.assertEqual(self.app.appearance.palette[4], '#a855f7')
+        self.assertEqual(self.app.appearance.palette[4], '#aa55ff')
 
     def test_hover_and_intro_stop_cleanly(self):
         intro = self.app.intro
